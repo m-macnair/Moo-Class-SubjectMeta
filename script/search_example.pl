@@ -4,6 +4,7 @@ use warnings;
 use Toolbox::CombinedCLI;
 use Moo::Class::SubjectMeta;
 use DBI;
+use Data::Dumper;
 main();
 
 sub main {
@@ -13,6 +14,6 @@ sub main {
 			dbh => DBI->connect( "dbi:mysql:subject_metadata", 'root', 'rootpassword' )
 		}
 	);
-	$sm->search_tags_to_subject( 'test1 test2 !test3 test4' );
+	print Dumper( $sm->search_tags_to_subject_id_stack( 'test1 test2 !test3 test4' ) );
 
 }

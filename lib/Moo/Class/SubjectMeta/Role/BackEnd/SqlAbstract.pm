@@ -50,9 +50,9 @@ ACCESSORS: {
 		The mk1
 =cut
 
-our $VERSION = '0.0';
+our $VERSION = '0.1';
 
-##~ DIGEST : 516777ae87b5a961e3a5cacec775c399
+##~ DIGEST : 34b74781e67c0d50dcf01e619be62934
 
 =head1 SYNOPSIS
 	TODO
@@ -115,6 +115,16 @@ sub add_subject {
 			id  => $self->new_subject_id()
 		};
 	}
+}
+
+=head2 SECONDARY
+=head3 tag_to_tag_id
+	add a subject definition, returning the id
+=cut
+
+sub tag_to_tag_id {
+	my ( $self, $search_string, $opt ) = @_;
+
 }
 
 =head2 WRAPPERS

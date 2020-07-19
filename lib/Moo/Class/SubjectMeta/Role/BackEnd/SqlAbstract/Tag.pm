@@ -31,6 +31,12 @@ ACCESSORS: {
 				default => 'id'
 			);
 
+			has tag_def_subjects => (
+				is      => 'rw',
+				lazy    => 1,
+				default => 'subjects'
+			);
+
 			has tag_def_search_cols => (
 				is      => 'rw',
 				lazy    => 1,
@@ -73,9 +79,9 @@ ACCESSORS: {
 		The mk1
 =cut
 
-our $VERSION = '0.0';
+our $VERSION = '0.1';
 
-##~ DIGEST : 516777ae87b5a961e3a5cacec775c399
+##~ DIGEST : 629934cbcd6051bdfed39f27b2f20518
 
 =head1 SYNOPSIS
 	TODO
@@ -124,63 +130,142 @@ sub untag_subject {
 }
 
 # TODO super daft crazy optimisation
-sub search_tags_to_subject {
-	my ( $self, $search_string, $opt ) = @_;
-	my ( %yes, %no );
-
-	my $first_yes;
-	for my $tag ( @{$self->_get_tag_array( $search_string )} ) {
-
-		#add negator?
-		if ( index( $tag, '!' ) == 0 ) {
-			$tag = substr( $tag, 1 );
-			my $res = $self->find_tag_def( {$self->tag_def_name() => $tag} );
-			Carp::confess( "Unknown tag $tag" ) unless $res->{id};
-			$no{$res->{id}} = $tag;
-		} else {
-			my $res = $self->find_tag_def( {$self->tag_def_name() => $tag} );
-			Carp::confess( "Unknown tag $tag" ) unless $res->{id};
-			if ( $first_yes ) {
-				$yes{$res->{id}} = $tag;
-			} else {
-				$first_yes = $res->{id};
-			}
-		}
-	}
-	my $intersect = [];
-	for my $key ( keys( %yes ) ) {
-		$self->build_nested( [ {column => $self->tag_cloud_tag_id, value => $key} ], $intersect );
-	}
-
-	#  die Dumper($intersect);
-	# 	warn $self->tag_cloud;
-	my $sth = $self->mselect(
-		[
-			-from    => $self->tag_cloud,
-			-columns => $self->tag_cloud_subject_id,
-			-where, {$self->tag_cloud_tag_id() => 3},
-
-			# 		-intersect => [
-			# 			-where , { tagdef_id => 1},
-			# 			-intersect , [
-			# 				-where , {tagdef_id => 2}
-			# 			]
-			# 		]
-			-intersect => $intersect,
-		]
-	);
-	print Dumper( $sth->fetchall_arrayref() );
-}
+# sub search_tags_to_subject {
+# 	die "Not yet implemented at generic level";
+# # 	my ( $self, $search_string, $opt ) = @_;
+# # 	my ( %yes, %no );
+#
+#
+# # 	my $first_yes;
+# # 	for my $tag ( @{$self->_get_tag_array( $search_string )} ) {
+# #
+# # 		#add negator?
+# # 		if ( index( $tag, '!' ) == 0 ) {
+# # 			$tag = substr( $tag, 1 );
+# # 			my $res = $self->find_tag_def( {$self->tag_def_name() => $tag} );
+# # 			Carp::confess( "Unknown tag $tag" ) unless $res->{id};
+# # 			$no{$res->{id}} = $tag;
+# # 		} else {
+# # 			my $res = $self->find_tag_def( {$self->tag_def_name() => $tag} );
+# # 			Carp::confess( "Unknown tag $tag" ) unless $res->{id};
+# # 			if ( $first_yes ) {
+# # 				$yes{$res->{id}} = $tag;
+# # 			} else {
+# # 				$first_yes = $res->{id};
+# # 			}
+# # 		}
+# # 	}
+# # 	my $intersect = [];
+# # 	for my $key ( keys( %yes ) ) {
+# # 		$self->build_nested( [ {column => $self->tag_cloud_tag_id, value => $key} ], $intersect );
+# # 	}
+# #
+# # 	#  die Dumper($intersect);
+# # 	# 	warn $self->tag_cloud;
+# # 	my $sth = $self->mselect(
+# # 		[
+# # 			-from    => $self->tag_cloud,
+# # 			-columns => $self->tag_cloud_subject_id,
+# # 			-where, {$self->tag_cloud_tag_id() => 3},
+# #
+# # 			# 		-intersect => [
+# # 			# 			-where , { tagdef_id => 1},
+# # 			# 			-intersect , [
+# # 			# 				-where , {tagdef_id => 2}
+# # 			# 			]
+# # 			# 		]
+# # 			-intersect => $intersect,
+# # 		]
+# # 	);
+# # 	print Dumper( $sth->fetchall_arrayref() );
+# }
 
 sub _get_tag_array {
-	my ( $self, $tag_string ) = @_;
-	my @tag_strings;
-	if ( index( $tag_string, $self->tag_separator() ) != -1 ) {
-		@tag_strings = split( $self->tag_separator(), $tag_string );
+	my ( $self, $tag_string, $p ) = @_;
+
+	$p ||= {};
+	my $return = [];
+	if ( $p->{method} ) {
+		unless ( $self->can( $p->{method} ) ) {
+			Carp::confess( "unsupported tag_string_to_array method ; $p->{method}" );
+
+		}
+		my $m = $p->{method};
+
+		for my $tag ( split( $self->tag_separator(), $tag_string ) ) {
+			my ( $res, $status ) = $self->$m( $tag );
+			if ( $res ) {
+				push( @{$return}, $res );
+			}
+		}
 	} else {
-		@tag_strings = ( $tag_string );
+		for ( split( $self->tag_separator(), $tag_string ) ) {
+			push( @{$return}, $_ );
+		}
 	}
-	return \@tag_strings;
+
+	return $return; #return!
+}
+
+=head3 _get_weighted_tag_array
+	get rarest tags first 
+=cut
+
+sub _get_weighted_tag_id_array {
+	my ( $self, $tag_string, $p ) = @_;
+
+	$p ||= {};
+	my $return = [];
+	my $sth    = $self->select(
+		$self->tag_def(),
+		[ $self->tag_def_id ],
+		{
+			$self->tag_def_name => {-in => [ split( $self->tag_separator, $tag_string ) ]},
+		},
+		{
+			-asc => [ $self->tag_def_subjects ]
+		}
+	);
+
+	return $self->get_column_array( $sth, $self->tag_def_id );
+
+}
+
+=head3 search_tags_to_subject
+	mariadb doesn't do intersect and i've broken my head on doing this in dbix::class::schema, so lets try moving it into a pure perl problem instead of 2^n inner joins. might actually work better with query caching
+=cut
+
+sub search_tags_to_subject_id_stack {
+	my ( $self, $search_string, $opt ) = @_;
+	my $weighted = $self->_get_weighted_tag_id_array( $search_string );
+	my $ids;
+	my $orderetc = {-asc => $self->tag_cloud_subject_id};
+
+	while ( my $this_tag_id = shift( @{$weighted} ) ) {
+		my $search = {$self->tag_cloud_tag_id => $this_tag_id,};
+
+		if ( $ids ) {
+			$search->{$self->tag_cloud_subject_id} = {-in => $ids};
+		}
+
+		my $qstack = [ $self->tag_cloud(), [ $self->tag_cloud_subject_id ], $search ];
+
+		#add order & paging clauses if this is the last tag being searched
+		unless ( ${$weighted}[0] ) {
+			push( @{$qstack}, $orderetc );
+		}
+
+		my $this_sth = $self->select( @{$qstack} );
+		$ids = [];
+		while ( my $row = $this_sth->fetchrow_arrayref() ) {
+			push( @{$ids}, $row->[0] );
+		}
+	}
+	return $ids;
+}
+
+sub debug {
+	return 1;
 }
 
 sub _tag_string_to_map {
@@ -242,6 +327,12 @@ sub new_tag_def_id {
 sub find_tag_def {
 	my ( $self, $tag_def ) = @_;
 	return $self->generic_get( 'tag_def', $tag_def );
+}
+
+sub find_tag_id_from_name {
+	my ( $self, $tag_name ) = @_;
+	my $row = $self->generic_get( 'tag_def', {name => $tag_name} );
+	return $row->{id};
 }
 
 sub add_tag_def {

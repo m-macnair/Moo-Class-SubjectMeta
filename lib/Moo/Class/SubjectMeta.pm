@@ -21,9 +21,9 @@ with qw/
 		<actions>
 =cut
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
-##~ DIGEST : 516777ae87b5a961e3a5cacec775c399
+##~ DIGEST : 8fb256e1923d8b74c055296c587ea0d5
 
 =head1 SYNOPSIS
 	TODO
