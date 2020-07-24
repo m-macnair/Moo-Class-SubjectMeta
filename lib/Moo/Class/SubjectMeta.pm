@@ -8,7 +8,6 @@ with qw/
   Moo::Class::SubjectMeta::Role::BackEnd::SqlAbstract::Tag
   Moo::Class::SubjectMeta::Role::BackEnd::SqlAbstract
   Moo::Class::SubjectMeta::Role::Core
-  Moo::Role::DB::Abstract::MySql
   /;
 
 =head1 NAME
@@ -20,10 +19,8 @@ with qw/
 	0.00 - <date unless same as above>
 		<actions>
 =cut
-
-our $VERSION = '0.05';
-
-##~ DIGEST : 8fb256e1923d8b74c055296c587ea0d5
+our $VERSION = '0.06';
+##~ DIGEST : 2185f50cbdcef3227212a17a8040ddcc
 
 =head1 SYNOPSIS
 	TODO
@@ -38,10 +35,11 @@ our $VERSION = '0.05';
 =head3 _init
 	Separate class instantiation and configuration for when that's a good idea (i.e. it's overwritten in child classes)
 =cut
-
 sub _init {
+
 	my ( $self, $conf ) = @_;
-	return {pass => 1};
+	return { pass => 1 };
+
 }
 
 =head2 PRIMARY SUBS
@@ -51,9 +49,11 @@ sub _init {
 =cut
 
 sub do_something {
+
 	my ( $self, $p ) = @_;
 	$self->validate_some_value( $p, 'the_thing' );
-	$self->_do_something( $p );
+	$self->_do_something($p);
+
 }
 
 =head2 SECONDARY SUBS
@@ -61,8 +61,10 @@ sub do_something {
 =cut
 
 sub validate_some_value {
+
 	my ( $self, $p, $value ) = @_;
 	die unless ( $p->{$value} );
+
 }
 
 =head2 ACCESSORS
@@ -90,5 +92,4 @@ sub getsomething {
 =head1 LICENSE
 	TODO
 =cut
-
 1;

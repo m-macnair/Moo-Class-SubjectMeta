@@ -10,6 +10,10 @@ sub main {
 
 	my $clv = Toolbox::CombinedCLI::get_config();
 	my $sm  = Moo::Class::SubjectMeta->new( { dbh => DBI->connect( "dbi:mysql:subject_metadata", 'root', 'rootpassword' ) } );
-	$sm->untag_subject( { name => 'test1' }, 'test2' );
+	#
+	# 	my $numbers = $sm->get_subject_tag_id_stack(1);
+	# 	print "$/numbers: " . join(',',@{$numbers});
+	my $strings = $sm->get_subject_tag_string_stack(1);
+	print "$/strings: " . join ( ',', @{$strings} );
 
 }
