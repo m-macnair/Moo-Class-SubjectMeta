@@ -5,6 +5,8 @@ use 5.006;
 use warnings;
 use Moo;
 with qw/
+  Moo::Class::SubjectMeta::Role::BackEnd::SqlAbstract::Subject
+  Moo::Class::SubjectMeta::Role::BackEnd::SqlAbstract::Set
   Moo::Class::SubjectMeta::Role::BackEnd::SqlAbstract::Tag
   Moo::Class::SubjectMeta::Role::BackEnd::SqlAbstract
   Moo::Class::SubjectMeta::Role::Core
@@ -19,8 +21,9 @@ with qw/
 	0.00 - <date unless same as above>
 		<actions>
 =cut
-our $VERSION = '0.06';
-##~ DIGEST : 2185f50cbdcef3227212a17a8040ddcc
+
+our $VERSION = '0.07';
+##~ DIGEST : b2ea07d1d575848e788f1036424be328
 
 =head1 SYNOPSIS
 	TODO
@@ -35,10 +38,11 @@ our $VERSION = '0.06';
 =head3 _init
 	Separate class instantiation and configuration for when that's a good idea (i.e. it's overwritten in child classes)
 =cut
+
 sub _init {
 
 	my ( $self, $conf ) = @_;
-	return { pass => 1 };
+	return {pass => 1};
 
 }
 
@@ -52,7 +56,7 @@ sub do_something {
 
 	my ( $self, $p ) = @_;
 	$self->validate_some_value( $p, 'the_thing' );
-	$self->_do_something($p);
+	$self->_do_something( $p );
 
 }
 
@@ -92,4 +96,5 @@ sub getsomething {
 =head1 LICENSE
 	TODO
 =cut
+
 1;

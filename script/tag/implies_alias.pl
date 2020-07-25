@@ -9,21 +9,25 @@ main();
 sub main {
 
 	my $clv  = Toolbox::CombinedCLI::get_config();
-	my $sm   = Moo::Class::SubjectMeta->new( { dbh => DBI->connect( "dbi:mysql:subject_metadata", 'root', 'rootpassword' ) } );
+	my $sm   = Moo::Class::SubjectMeta->new( {dbh => DBI->connect( "dbi:mysql:subject_metadata", 'root', 'rootpassword' )} );
 	my $time = time;
-	$sm->add_tag_def( {
+	$sm->add_tag_def(
+		{
 			name => "funky",
 		}
 	);
-	$sm->add_tag_def( {
+	$sm->add_tag_def(
+		{
 			name => "fnucky$time",
 		}
 	);
-	$sm->add_tag_def( {
+	$sm->add_tag_def(
+		{
 			name => "fresh",
 		}
 	);
-	$sm->add_tag_def( {
+	$sm->add_tag_def(
+		{
 			name => "beats",
 		}
 	);

@@ -1,12 +1,19 @@
 Today:
+
+
+
+Next:
+	add_set_def
+	add_set_subject
+	change_set_subject_position
+	get_set_paged_subjects
+	
+	
+Done:
+
 	tag_subject - done
 	untag_subject - done
 	
 	search_tags - Done 
 	add_alias - Done 
 	add_implication - Done
-	
-	processalias.pl - skip
-
-Some Day:
-	set_tag_subject
