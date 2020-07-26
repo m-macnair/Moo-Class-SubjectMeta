@@ -8,9 +8,9 @@ use warnings;
 use Moo::Role;
 use Carp qw/confess/;
 with qw/
-  Moo::Role::DB
-  Moo::Role::DB::MariaMysql
-  Moo::Role::DB::Abstract
+  Moo::GenericRole::DB
+  Moo::GenericRole::DB::MariaMysql
+  Moo::GenericRole::DB::Abstract
   /;
 
 =head1 NAME
